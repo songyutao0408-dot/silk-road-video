@@ -5,7 +5,7 @@ import {PaperGrain, Shot} from '../components/Base';
 import {Plate, YearBanner} from '../components/Overlays';
 import raw from '../data/shot04.json';
 import {City, GeoText, MapView, RouteLine} from '../map/MapView';
-import {P} from '../map/places';
+import {P, XIONGNU} from '../map/places';
 import {Cam, fracAt, LL, mkPath, slicePath} from '../map/projection';
 import {C, SANS, SERIF, W} from '../theme';
 import {cue, keys, pop, ramp, ShotData, useT, window_} from '../timing';
@@ -20,7 +20,6 @@ const OUT1 = mkPath([P.长安, [105.5, 35.3], [103.2, 36.7], CAP1]);
 const OUT2 = mkPath([CAP1, [98.5, 39.8], [94.7, 40.3], [89.5, 42.5], [83, 41.5], [76.2, 39.6], [73.6, 39.9], P.大宛, P.康居, P.大月氏, P.大夏]);
 const RET1 = mkPath([P.大夏, [71, 37.2], [75.5, 37.6], [80, 37.0], [85.5, 37.7], [90.5, 38.2], CAP2]);
 const RET2 = mkPath([CAP2, [99, 36.3], [103.8, 35.4], P.长安]);
-const XIONGNU: LL[] = [[84, 52], [124, 52], [124, 42.5], [113, 41.2], [107, 40], [103.6, 38.2], [101.6, 37], [97, 38.3], [93, 39.6], [88, 43.6], [84, 46]];
 
 // —— 时间点（全部跟着配音走）——
 const T = {

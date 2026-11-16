@@ -40,11 +40,25 @@ export const Subtitles: React.FC<{data: ShotData}> = ({data}) => {
   );
 };
 
-/** 镜头外壳：配音（前后各留 0.3 秒）+ 字幕 */
-export const Shot: React.FC<{data: ShotData; children: React.ReactNode}> = ({data, children}) => (
-  <AbsoluteFill>
+/** 墨迹晕开转场：镜头开头墨色从中心散开，结尾向中心合拢（都落在 0.3 秒留白内） */
+export const InkTransition: React.FC<{data: ShotData; intro?: boolean; outro?: boolean}> = ({data, intro = true, outro = true}) => {
+  const t = useT();
+  const D = 0.28;
+  let r: number | null = null; // 透明圆的半径（占对角线百分比）
+  if (intro && t < D) r = (t / D) ** 1.6 * 115;
+  else if (outro && t > data.duration - D) r = (Math.max(0, data.duration - t - 0.03) / D) ** 1.6 * 115;
+  if (r === null) return null;
+  return (
+    <AbsoluteFill style={{background: `radial-gradient(circle at 50% 44%, rgba(30,27,25,0) ${Math.max(0, r - 14)}%, rgba(30,27,25,.75) ${r - 4}%, ${C.dark} ${r + 4}%)`}} />
+  );
+};
+
+/** 镜头外壳：配音（前后各留 0.3 秒）+ 字幕 + 转场 */
+export const Shot: React.FC<{data: ShotData; intro?: boolean; outro?: boolean; children: React.ReactNode}> = ({data, intro, outro, children}) => (
+  <AbsoluteFill style={{backgroundColor: C.dark}}>
     {children}
     <Subtitles data={data} />
+    <InkTransition data={data} intro={intro} outro={outro} />
     <Sequence from={Math.round(data.pad * FPS)} layout="none">
       <Audio src={staticFile(data.audio)} />
     </Sequence>

@@ -5,7 +5,8 @@
  "audio": "audio/shot12.mp3",
  "audioDuration": 10.344,
  "pad": 0.3,
- "duration": 10.944,
+ "hold": 2.0,
+ "duration": 12.944,
  "lines": [
   {
    "text": "最后划重点",

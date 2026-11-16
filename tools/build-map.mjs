@@ -2,7 +2,7 @@
 // 只取自然地理要素，不含任何国界和行政区划。
 import fs from 'node:fs';
 const load = (n) => JSON.parse(fs.readFileSync(`.cache/${n}.geojson`, 'utf8'));
-const BOX = {w: -25, e: 150, s: -5, n: 78};
+const BOX = {w: -40, e: 160, s: -60, n: 85};
 // 与 src/map/projection.ts 保持一致：等距圆柱投影，标准纬线 38°N
 const KX = Math.cos((38 * Math.PI) / 180);
 const proj = ([lon, lat]) => [+(lon * KX).toFixed(3), +(-lat).toFixed(3)];

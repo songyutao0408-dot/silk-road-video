@@ -5,6 +5,7 @@
  "audio": "audio/shot04.mp3",
  "audioDuration": 32.088,
  "pad": 0.3,
+ "hold": 0,
  "duration": 32.688,
  "lines": [
   {

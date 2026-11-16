@@ -8,6 +8,7 @@ export type ShotData = {
   audio: string;
   audioDuration: number;
   pad: number;
+  hold?: number;
   duration: number;
   lines: {text: string; start: number; end: number}[];
   words: {text: string; idx: number; start: number; end: number}[];

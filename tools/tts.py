@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """按镜头生成配音（edge-tts / zh-CN-YunxiNeural / +0%）和字幕时间轴。
-用法: python3 tools/tts.py [镜头号 ...]   不带参数则生成全部。
+用法: python3 tools/tts.py [--retime] [镜头号 ...]   不带镜头号则处理全部。
+  --retime  不重新合成配音，只用已有的时间戳重算字幕（改断行、改停留时长时用）
+narration.json 里每个镜头可选: "lines"（手动指定字幕断行）、"hold"（结尾额外停留秒数）
 输出: public/audio/shotNN.mp3, src/data/shotNN.json
 """
 import asyncio, json, os, re, subprocess, sys
@@ -12,6 +14,7 @@ if CA and os.path.exists(CA):  # 云端环境走代理，需信任环境提供�
     certifi.where = lambda: CA
 import edge_tts
 
+RETIME = "--retime" in sys.argv
 VOICE, RATE = "zh-CN-YunxiNeural", "+0%"
 PAD = 0.3          # 镜头前后各留 0.3 秒
 MAXLEN = 16        # 字幕每行最多 16 字
@@ -76,8 +79,12 @@ async def synth(shot):
     sid, text = shot["id"], shot["text"]
     mp3 = os.path.join(ROOT, "public/audio", f"shot{sid:02d}.mp3")
     words = []
-    com = edge_tts.Communicate(text, VOICE, rate=RATE, boundary="WordBoundary")
-    with open(mp3, "wb") as f:
+    jpath = os.path.join(ROOT, "src/data", f"shot{sid:02d}.json")
+    if RETIME:
+        words = [{"text": w["text"], "start": w["start"], "end": w["end"]} for w in json.load(open(jpath, encoding="utf-8"))["words"]]
+    else:
+      com = edge_tts.Communicate(text, VOICE, rate=RATE, boundary="WordBoundary")
+      with open(mp3, "wb") as f:
         async for ch in com.stream():
             if ch["type"] == "audio":
                 f.write(ch["data"])
@@ -108,7 +115,13 @@ async def synth(shot):
             prev = w
         return prev["end"] if prev else 0.0
 
-    spans = split_lines(text, wordcuts)
+    manual = shot.get("lines")
+    if manual:
+        spans, at = [], 0
+        for m in manual:
+            i = text.index(m, at); spans.append((i, i + len(m))); at = i + len(m)
+    else:
+        spans = split_lines(text, wordcuts)
     lines = []
     for k, (a, b) in enumerate(spans):
         raw = text[a:b]
@@ -116,7 +129,7 @@ async def synth(shot):
         start = t_at(a + lead)
         last = [w for w in words if w["idx"] < b]
         end = last[-1]["end"] if last else dur
-        lines.append({"text": clean(raw), "start": round(start, 3), "end": round(end, 3)})
+        lines.append({"text": raw if manual else clean(raw), "start": round(start, 3), "end": round(end, 3)})
     for k in range(len(lines) - 1):  # 短停顿时字幕连续显示
         gap = lines[k + 1]["start"] - lines[k]["end"]
         lines[k]["end"] = lines[k + 1]["start"] if gap < 0.6 else round(lines[k]["end"] + 0.25, 3)
@@ -124,11 +137,12 @@ async def synth(shot):
     for ln in lines:
         assert len(ln["text"]) <= MAXLEN, ln
     data = {"id": sid, "title": shot["title"], "text": text, "audio": f"audio/shot{sid:02d}.mp3",
-            "audioDuration": round(dur, 3), "pad": PAD, "duration": round(dur + 2 * PAD, 3),
+            "audioDuration": round(dur, 3), "pad": PAD, "hold": shot.get("hold", 0),
+            "duration": round(dur + 2 * PAD + shot.get("hold", 0), 3),
             "lines": lines,
             "words": [{"text": w["text"], "idx": w["idx"], "start": round(w["start"], 3),
                        "end": round(w["end"], 3)} for w in words]}
-    with open(os.path.join(ROOT, "src/data", f"shot{sid:02d}.json"), "w", encoding="utf-8") as f:
+    with open(jpath, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
     print(f"镜头{sid:02d} {dur:6.2f}s  {len(lines)} 行字幕")
     for ln in lines:
@@ -138,7 +152,7 @@ async def synth(shot):
 
 async def main():
     shots = json.load(open(os.path.join(ROOT, "script/narration.json"), encoding="utf-8"))
-    want = [int(a) for a in sys.argv[1:]]
+    want = [int(a) for a in sys.argv[1:] if not a.startswith("--")]
     total = 0
     for s in shots:
         if want and s["id"] not in want:

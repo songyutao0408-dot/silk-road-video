@@ -30,7 +30,7 @@ export const Shot01: React.FC = () => {
   const pulse = 1 + 0.06 * Math.sin(Math.min(1, Math.max(0, (t - t2000) / 0.6)) * Math.PI);
   let ci = 0;
   return (
-    <Shot data={d}>
+    <Shot data={d} intro={false}>
       <Paper dark>
         <AbsoluteFill style={{transform: `scale(${zoom})`, transformOrigin: '50% 45%'}}>
           {/* 墨晕 */}
