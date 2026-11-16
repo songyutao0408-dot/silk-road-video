@@ -1,0 +1,65 @@
+{
+ "id": 2,
+ "title": "标题",
+ "text": "答案，藏在一条路里——丝绸之路。",
+ "audio": "audio/shot02.mp3",
+ "audioDuration": 3.768,
+ "pad": 0.3,
+ "duration": 4.368,
+ "lines": [
+  {
+   "text": "答案，藏在一条路里",
+   "start": 0.1,
+   "end": 2.025
+  },
+  {
+   "text": "丝绸之路",
+   "start": 2.025,
+   "end": 3.188
+  }
+ ],
+ "words": [
+  {
+   "text": "答案",
+   "idx": 0,
+   "start": 0.1,
+   "end": 0.55
+  },
+  {
+   "text": "藏",
+   "idx": 3,
+   "start": 0.825,
+   "end": 1.05
+  },
+  {
+   "text": "在",
+   "idx": 4,
+   "start": 1.05,
+   "end": 1.137
+  },
+  {
+   "text": "一条",
+   "idx": 5,
+   "start": 1.15,
+   "end": 1.387
+  },
+  {
+   "text": "路",
+   "idx": 7,
+   "start": 1.4,
+   "end": 1.6
+  },
+  {
+   "text": "里",
+   "idx": 8,
+   "start": 1.6,
+   "end": 1.775
+  },
+  {
+   "text": "丝绸之路",
+   "idx": 11,
+   "start": 2.025,
+   "end": 2.888
+  }
+ ]
+}

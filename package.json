@@ -1,0 +1,23 @@
+{
+  "name": "silk-road-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "《丝绸之路》历史科普竖屏短视频（Remotion）",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "assets": "bash tools/fetch-assets.sh && node tools/build-map.mjs && NODE_PATH=$(npm root -g) node tools/gen-paper.cjs",
+    "tts": "python3 tools/tts.py",
+    "preview": "bash tools/render.sh preview",
+    "final": "bash tools/render.sh final"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.544",
+    "@remotion/cli": "^4.0.544",
+    "@remotion/renderer": "^4.0.544",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.544",
+    "typescript": "^7.0.2"
+  }
+}
