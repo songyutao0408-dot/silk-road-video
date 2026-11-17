@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """把分镜头片段合成整片，并导出字幕和旁白稿。
-用法: python3 tools/assemble.py preview|final
+用法: python3 tools/assemble.py preview|final [--no-bgm]
+  BGM:  public/audio/bgm.wav 存在时自动混入，音量压在配音之下，旁白出现时再自动压低（闪避）
   视频: 各镜头片段无损拼接（不二次压缩画面）
   音频: 按时间轴把 13 段配音重新铺一遍，避免逐段拼接产生的累计偏差
   输出: preview → preview/full_preview.mp4
@@ -43,10 +44,22 @@ flt = []
 for i, (s, o) in enumerate(zip(shots, off)):
     cmd += ["-i", "public/" + s["audio"]]
     flt.append(f"[{i + 1}:a]aresample=48000,adelay={round((o + s['pad']) * 1000)}:all=1[a{i}]")
-flt.append("".join(f"[a{i}]" for i in range(len(shots))) + f"amix=inputs={len(shots)}:normalize=0,apad=whole_dur={total:.3f}[a]")
+BGM = "public/audio/bgm.wav"
+use_bgm = os.path.exists(BGM) and "--no-bgm" not in sys.argv
+voice = "".join(f"[a{i}]" for i in range(len(shots))) + f"amix=inputs={len(shots)}:normalize=0,apad=whole_dur={total:.3f}"
+if use_bgm:
+    cmd += ["-i", BGM]
+    k = len(shots) + 1
+    flt.append(voice + ",asplit=2[v1][v2]")
+    flt.append(f"[{k}:a]aresample=48000,highpass=f=55,volume=-9dB[b0]")
+    flt.append("[b0][v2]sidechaincompress=threshold=0.02:ratio=5:attack=40:release=600[b1]")
+    flt.append("[v1][b1]amix=inputs=2:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[a]")
+else:
+    flt.append(voice + ",loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[a]")
+suffix = "" if use_bgm or mode != "final" else "_无BGM"
 if mode == "final":
     os.makedirs("output", exist_ok=True)
-    out = "output/丝绸之路.mp4"
+    out = f"output/丝绸之路{suffix}.mp4"
     open("output/丝绸之路.srt", "w", encoding="utf-8").write("\n".join(srt))
     open("output/丝绸之路_旁白文本.txt", "w", encoding="utf-8").write("\n".join(txt))
 else:
